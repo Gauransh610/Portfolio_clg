@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assignment 7 - Users</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 35px;
+            background: #f1f0e8;
+            font-family: Arial, sans-serif;
+        }
+
+        .container { max-width: 950px; margin: auto; }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 13px;
+            border: 1px solid #aaa;
+            border-radius: 12px;
+            font-size: 17px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: 1px solid #888;
+            border-radius: 12px;
+            background: white;
+            font-size: 17px;
+            cursor: pointer;
+        }
+
+        .users {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .user {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: white;
+            border: 1px solid #d5d3ca;
+            border-radius: 18px;
+            padding: 18px;
+        }
+
+        .initials {
+            min-width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #b6d4f3;
+            color: #174b7b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .user h3 { margin: 0 0 10px; }
+        .user p { margin: 5px 0; color: #666; overflow-wrap: anywhere; }
+        #message { color: #666; margin-top: 18px; }
+
+        @media (max-width: 750px) {
+            .users { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-row">
+            <input type="text" id="search" placeholder="Search by name">
+            <button onclick="sortUsers()">Sort by name</button>
+        </div>
+
+        <p id="message">Loading...</p>
+        <div class="users" id="userList"></div>
+    </div>
+
+    <script>
+        let users = [];
+        let ascending = true;
+
+        async function getUsers() {
+            try {
+                document.getElementById("message").innerText = "Loading...";
+
+                let response = await fetch("https://jsonplaceholder.typicode.com/users");
+
+                if (!response.ok) {
+                    throw new Error("Could not load users");
+                }
+
+                users = await response.json();
+                showUsers();
+            } catch (error) {
+                document.getElementById("message").innerText =
+                    "Error loading users. Please try again.";
+            }
+        }
+
+        function showUsers() {
+            let searchText = document.getElementById("search").value.toLowerCase();
+
+            let result = users.filter(user =>
+                user.name.toLowerCase().includes(searchText)
+            );
+
+            document.getElementById("userList").innerHTML =
+                result.map(({ name, email, address }) => {
+                    let { city } = address;
+                    let initials = name.split(" ").map(word => word[0]).slice(0, 2).join("");
+
+                    return `
+                        <div class="user">
+                            <div class="initials">${initials}</div>
+                            <div>
+                                <h3>${name}</h3>
+                                <p>✉ ${email}</p>
+                                <p>♙ ${city}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+
+            if (result.length === 0) {
+                document.getElementById("message").innerText = "No users found";
+            } else {
+                document.getElementById("message").innerText = "";
+            }
+        }
+
+        function sortUsers() {
+            users.sort((a, b) => {
+                return ascending
+                    ? a.name.localeCompare(b.name)
+                    : b.name.localeCompare(a.name);
+            });
+
+            ascending = !ascending;
+            showUsers();
+        }
+
+        document.getElementById("search").addEventListener("input", showUsers);
+
+        getUsers();
+    </script>
+</body>
+</html>

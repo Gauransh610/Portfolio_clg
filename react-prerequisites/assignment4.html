@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assignment 4 - Todo List</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f1f0e8;
+            font-family: Arial, sans-serif;
+        }
+
+        .todo-box {
+            width: 520px;
+            padding: 30px;
+            background: white;
+            border: 1px solid #d5d3ca;
+            border-radius: 25px;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { margin: 0 0 20px; }
+
+        #remaining {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 0;
+            padding: 12px;
+            border: 1px solid #aaa;
+            border-radius: 12px;
+            font-size: 17px;
+        }
+
+        button {
+            padding: 9px 17px;
+            background: white;
+            border: 1px solid #888;
+            border-radius: 10px;
+            font-size: 17px;
+            cursor: pointer;
+        }
+
+        .task {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 0;
+            border-top: 1px solid #ddd9cf;
+            font-size: 18px;
+        }
+
+        .task-name { flex: 1; }
+
+        .done {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: #397514;
+        }
+    </style>
+</head>
+<body>
+    <div class="todo-box">
+        <div class="top">
+            <h1>My todos</h1>
+            <span id="remaining">2 tasks remaining</span>
+        </div>
+
+        <form id="todoForm">
+            <input type="text" id="taskInput" placeholder="Buy groceries">
+            <button type="submit">Add</button>
+        </form>
+
+        <div id="taskList"></div>
+    </div>
+
+    <script>
+        let tasks = [
+            { id: 1, text: "Revise destructuring", done: false },
+            { id: 2, text: "Practice map and filter", done: true },
+            { id: 3, text: "Read about fetch", done: false }
+        ];
+
+        function render() {
+            let list = document.getElementById("taskList");
+
+            list.innerHTML = tasks.map(task => `
+                <div class="task">
+                    <input type="checkbox" ${task.done ? "checked" : ""}
+                        onchange="changeTask(${task.id})">
+                    <span class="task-name ${task.done ? "done" : ""}">
+                        ${task.text}
+                    </span>
+                    <button onclick="deleteTask(${task.id})">Delete</button>
+                </div>
+            `).join("");
+
+            let left = tasks.filter(task => task.done === false).length;
+            document.getElementById("remaining").innerText =
+                left + " tasks remaining";
+        }
+
+        function changeTask(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) {
+                    return { ...task, done: !task.done };
+                }
+                return task;
+            });
+            render();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            render();
+        }
+
+        document.getElementById("todoForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let text = document.getElementById("taskInput").value.trim();
+
+            if (text === "") return;
+
+            tasks = [...tasks, {
+                id: Date.now(),
+                text: text,
+                done: false
+            }];
+
+            document.getElementById("taskInput").value = "";
+            render();
+        });
+
+        render();
+    </script>
+</body>
+</html>
